@@ -17,6 +17,8 @@ import { ThemedView } from '@/components/themed-view';
 import { Collapsible } from '@/components/ui/collapsible';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { Text } from 'react-native';
+
 
 type HookSectionProps = {
   title: string;
@@ -66,6 +68,9 @@ export default function HooksScreen() {
       contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}
       keyboardShouldPersistTaps="handled">
       <ThemedView style={styles.container}>
+        <ThemedText type="subtitle">Les hooks</ThemedText>
+        <Text className="text-2xl font-bold text-blue-500">Tailwind marche !</Text>
+
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="subtitle">Les hooks</ThemedText>
           <ThemedText style={styles.centerText} themeColor="textSecondary">
