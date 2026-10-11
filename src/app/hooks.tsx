@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { SymbolView } from 'expo-symbols';
+import { useState, type ReactNode } from 'react';
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CodeBlock } from '@/components/code-block';
@@ -12,14 +14,10 @@ import {
   UseRefDemo,
   UseStateDemo,
 } from '@/components/hook-demos';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { Text } from 'react-native';
 
-
+// Props attendues par HookSection.
 type HookSectionProps = {
   title: string;
   description: ReactNode;
@@ -27,27 +25,52 @@ type HookSectionProps = {
   demo: ReactNode;
 };
 
+// HookSection : une section dépliable (titre cliquable → explication, code et démo).
 function HookSection({ title, description, code, demo }: HookSectionProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const theme = useTheme();
+
   return (
-    <Collapsible title={title}>
-      <View style={styles.section}>
-        <ThemedText type="small">{description}</ThemedText>
-        <CodeBlock>{code}</CodeBlock>
-        <ThemedText type="smallBold">Essayez :</ThemedText>
-        {demo}
-      </View>
-    </Collapsible>
+    <View>
+      <Pressable
+        onPress={() => setIsOpen((value) => !value)}
+        className="flex-row items-center gap-2 active:opacity-70">
+        <View className="h-6 w-6 items-center justify-center rounded-xl bg-element dark:bg-element-dark">
+          <SymbolView
+            name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
+            size={14}
+            weight="bold"
+            tintColor={theme.text}
+            style={{ transform: [{ rotate: isOpen ? '-90deg' : '90deg' }] }}
+          />
+        </View>
+        <Text className="text-sm font-medium text-black dark:text-white">{title}</Text>
+      </Pressable>
+
+      {isOpen && (
+        <Animated.View entering={FadeIn.duration(200)}>
+          <View className="ml-6 mt-4 gap-4 rounded-2xl bg-element p-6 dark:bg-element-dark">
+            <Text className="text-sm font-medium text-black dark:text-white">{description}</Text>
+            <CodeBlock>{code}</CodeBlock>
+            <Text className="text-sm font-bold text-black dark:text-white">Essayez :</Text>
+            {demo}
+          </View>
+        </Animated.View>
+      )}
+    </View>
   );
 }
 
+// HooksScreen : l'écran de l'onglet Hooks, qui assemble l'en-tête, les règles et les sections.
+// Les démos (UseStateDemo, etc.) viennent de src/components/hook-demos.tsx.
 export default function HooksScreen() {
   const safeAreaInsets = useSafeAreaInsets();
   const insets = {
     ...safeAreaInsets,
     bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
   };
-  const theme = useTheme();
 
+  // Les marges de zone sûre sont calculées à l'exécution : elles restent en style.
   const contentPlatformStyle = Platform.select({
     android: {
       paddingTop: insets.top,
@@ -63,34 +86,36 @@ export default function HooksScreen() {
 
   return (
     <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
+      className="flex-1 bg-white dark:bg-black"
       contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}
+      contentContainerClassName="flex-row justify-center"
+      contentContainerStyle={contentPlatformStyle}
       keyboardShouldPersistTaps="handled">
-      <ThemedView style={styles.container}>
-        <ThemedText type="subtitle">Les hooks</ThemedText>
-        <Text className="text-2xl font-bold text-blue-500">Tailwind marche !</Text>
-
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Les hooks</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
+      <View className="max-w-[800px] grow">
+        <View className="items-center gap-4 px-6 py-16">
+          <Text className="text-[32px] font-semibold leading-[44px] text-black dark:text-white">
+            Les hooks
+          </Text>
+          <Text className="text-center text-base font-medium text-secondary dark:text-secondary-dark">
             Des fonctions « use… » qui donnent à un composant{'\n'}de la mémoire, des effets et
             plus encore.
-          </ThemedText>
-        </ThemedView>
+          </Text>
+        </View>
 
-        <ThemedView type="backgroundElement" style={styles.rules}>
-          <ThemedText type="smallBold">Les 2 règles des hooks</ThemedText>
-          <ThemedText type="small">
+        <View className="mx-6 gap-2 rounded-3xl bg-element p-6 dark:bg-element-dark">
+          <Text className="text-sm font-bold text-black dark:text-white">
+            Les 2 règles des hooks
+          </Text>
+          <Text className="text-sm font-medium text-black dark:text-white">
             1. Les appeler en haut du composant, jamais dans un if, une boucle ou une fonction
             imbriquée.
-          </ThemedText>
-          <ThemedText type="small">
+          </Text>
+          <Text className="text-sm font-medium text-black dark:text-white">
             2. Les appeler uniquement dans un composant React ou dans un autre hook.
-          </ThemedText>
-        </ThemedView>
+          </Text>
+        </View>
 
-        <ThemedView style={styles.sectionsWrapper}>
+        <View className="gap-8 px-6 pt-8">
           <HookSection
             title="useState — mémoriser une valeur"
             description="Garde une valeur entre les rendus. Appeler le setter change la valeur et redessine le composant."
@@ -174,7 +199,7 @@ function Greeting() {
               <>
                 Une fonction dont le nom commence par « use » et qui appelle d&apos;autres hooks.
                 Exemple dans ce projet :{' '}
-                <ThemedText type="code">src/hooks/use-theme.ts</ThemedText>.
+                <Text className="font-mono text-xs">src/hooks/use-theme.ts</Text>.
               </>
             }
             code={`
@@ -187,45 +212,8 @@ function useToggle(initial = false) {
 const [isOn, toggle] = useToggle();`}
             demo={<CustomHookDemo />}
           />
-        </ThemedView>
-      </ThemedView>
+        </View>
+      </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
-  },
-  titleContainer: {
-    gap: Spacing.three,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
-  },
-  centerText: {
-    textAlign: 'center',
-  },
-  rules: {
-    gap: Spacing.two,
-    marginHorizontal: Spacing.four,
-    padding: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.five,
-  },
-  section: {
-    gap: Spacing.three,
-  },
-});

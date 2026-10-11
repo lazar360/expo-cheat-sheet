@@ -1,28 +1,13 @@
-import { ScrollView, StyleSheet } from 'react-native';
-
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
-
-import { Spacing } from '@/constants/theme';
+import { ScrollView, Text, View } from 'react-native';
 
 export function CodeBlock({ children }: { children: string }) {
   return (
-    <ThemedView type="backgroundSelected" style={styles.container}>
+    <View className="rounded-lg bg-selected p-4 dark:bg-selected-dark">
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <ThemedText type="code" style={styles.code}>
+        <Text className="font-mono text-xs leading-[18px] text-black dark:text-white">
           {children.trim()}
-        </ThemedText>
+        </Text>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: Spacing.two,
-    padding: Spacing.three,
-  },
-  code: {
-    lineHeight: 18,
-  },
-});
